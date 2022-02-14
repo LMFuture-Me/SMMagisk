@@ -1,0 +1,3 @@
+/home/lmfuture/CLionProjects/getMagisk/cmake-build-debug/CMakeFiles/edit_cache.dir
+/home/lmfuture/CLionProjects/getMagisk/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/home/lmfuture/CLionProjects/getMagisk/cmake-build-debug/CMakeFiles/getMagisk.dir
