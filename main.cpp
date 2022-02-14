@@ -7,7 +7,11 @@
 #include "cJSON.c"
 
 // 使用全局替换，将/www/wwwroot/mirror.lmfty.com/magisk替换为你的网站路径再
-// 将https://mirror.lmfty.com/magisk替换为你的网站URL即可
+// 将https://mirror.lmfty.com/magisk替换为你的网站URL
+// 当然，这还没完，你需要反向代理https://raw.rat.dev/topjohnwu/magisk-files/到你网站的/stub目录下
+// 还需要反向代理https://topjohnwu.github.io/Magisk/releases/到你网站的/notes目录下
+// 这两个文件由于实在太小，我没有设置镜像，而是简单的反向代理，谅解一下
+// 你可以使用宝塔面板，可以很容易的配置完成
 // 请使用计划任务自动运行，运行频率由你来定，编译命令：g++ main.cpp -O3，二进制文件名为a.out，你可以自己来定二进制文件的名字
 
 using namespace std;
