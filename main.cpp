@@ -156,14 +156,24 @@ void getVersion(){
 }
 
 void EnableMaintenance(){
-    
+    char Filepath[1024];
+    sprintf(Filepath,"%s/UnderMaintenance.html",SitePath);
+    OverwriteFile(Filepath,"<!doctype html><html><head><meta charset=\"utf-8\"><title>正在维护，几秒就好！</title><style>.container {width: 60%;margin: 10% auto 0;background-color: #f0f0f0;padding: 2% 5%;border-radius: 10px}ul {padding-left: 20px;}ul li {line-height: 2.3}a {color: #20a53a}</style></head><body><div class=\"container\"><h1>本镜像正在维护</h1><h3>这一过程是完全自动化的</h3><ul><li>如果您碰到这个页面，说明您运气太好了。您可以过几秒再来。</li><li>如果几秒后还是不行，请联系2835365572zty@gmail.com或QQ2779959825</li></ul></div></body></html>");
+    printf("\nMaintenanceMode Enabled.");
 }
 
 void DisableMaintenance(){
-
+    char Filepath[1024];
+    sprintf(Filepath,"%s/UnderMaintenance.html",SitePath);
+    if(remove(Filepath) != 0){
+        printf("\nCannot Disable MaintenanceMode. But I am still working.:)");
+        exit(1);
+    }
+    printf("\nMaintenanceMode Disabled.");
 }
 
 void Update(const char* TargetFilePath){
+    EnableMaintenance();
     char DownloadAndOverwriteCommand[1024];
     char OverwriteLatestCommand[1024];
     char VersionAPIPath[1024];
@@ -177,6 +187,7 @@ void Update(const char* TargetFilePath){
     system(DownloadAndOverwriteCommand);
     system(OverwriteLatestCommand);
     OrganizeJson();
+    DisableMaintenance();
 }
 
 int main()
