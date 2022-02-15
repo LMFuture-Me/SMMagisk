@@ -6,8 +6,7 @@
 #include "cJSON.h"
 #include "cJSON.c"
 
-// 使用全局替换，将/www/wwwroot/mirror.lmfty.com/magisk替换为你的网站路径再
-// 将https://mirror.lmfty.com/magisk替换为你的网站URL
+// 首先，你需要将下面SitePath和MirrorURL两个变量替换为你的网站
 // 当然，这还没完，你需要反向代理https://raw.rat.dev/topjohnwu/magisk-files/到你网站的/stub目录下
 // 还需要反向代理https://topjohnwu.github.io/Magisk/releases/到你网站的/notes目录下
 // 这两个文件由于实在太小，我没有设置镜像，而是简单的反向代理，谅解一下
@@ -17,7 +16,9 @@
 using namespace std;
 
 int start,final;
-char Result[128];
+char VerData[128];
+const char* SitePath = "/www/wwwroot/mirror.lmfty.com/magisk";
+const char* MirrorURL = "https://mirror.lmfty.com/magisk";
 
 char* ReadFile(char* filename)
 {
@@ -32,7 +33,9 @@ char* ReadFile(char* filename)
     return text;
 }
 
-int OverwriteFile(const char* FileName,const char* Content){
+int OverwriteFile(char* FileName,const char* Content){
+    printf("\nOutputFile:");
+    printf(FileName);
     FILE* fp;
     fp = fopen(FileName,"w+");
     if (fp == NULL){
@@ -82,8 +85,6 @@ int getPosition(const char* InputString){
     return 0;
 }
 
-
-
 int OrganizeJson(){
     //Get Json File
     remove("jsontemp.json");
@@ -123,9 +124,9 @@ int OrganizeJson(){
     char MagiskLink[1024];
     char MagiskNote[1024];
     char StubLink[1024];
-    sprintf(MagiskLink,"https://mirror.lmfty.com/magisk/Magisk-v%s.apk",cjson_magisk_version->valuestring);
-    sprintf(MagiskNote,"https://mirror.lmfty.com/magisk/notes/%s.md",cjson_magisk_versionCode->valuestring);
-    sprintf(StubLink,"https://mirror.lmfty.com/magisk/stub/%s/stub-release.apk",cjson_magisk_version->valuestring);
+    sprintf(MagiskLink,"%s/Magisk-v%s.apk",MirrorURL,cjson_magisk_version->valuestring);
+    sprintf(MagiskNote,"%s/notes/%s.md",MirrorURL,cjson_magisk_versionCode->valuestring);
+    sprintf(StubLink,"%s/stub/%s/stub-release.apk",MirrorURL,cjson_magisk_version->valuestring);
     cJSON_DetachItemFromObject(cjson_magisk, "link");
     cJSON_DetachItemFromObject(cjson_magisk, "note");
     cJSON_DetachItemFromObject(cjson_stub, "link");
@@ -134,14 +135,15 @@ int OrganizeJson(){
     cJSON_AddItemToObject(cjson_stub, "link", cJSON_CreateString(StubLink));
 
     const char* Output = cJSON_Print(cjson_master);
+    char WriteFilepath[1024];
     printf("\n%s", Output);
-    OverwriteFile("/www/wwwroot/mirror.lmfty.com/magisk/update-stable.json",cJSON_Print(cjson_master));
+    sprintf(WriteFilepath,"%s/update-stable.json",SitePath);
+    OverwriteFile(WriteFilepath,cJSON_Print(cjson_master));
     cJSON_Delete(cjson_master);
     return 0;
 }
 
-int main()
-{
+void getVersion(){
     remove("curltemp.txt");
     system("curl https://github.com/topjohnwu/Magisk/releases/latest/ > curltemp.txt");
     char* FileContent= ReadFile("curltemp.txt");
@@ -149,23 +151,42 @@ int main()
     char *ptr = strstr(FileContent, "tag/");
     if(getPosition(ptr))
         exit(1);
-    strncpy(Result, ptr+start, final);
+    strncpy(VerData, ptr+start, final);
+    sprintf(VerData,"%s",VerData);
+}
+
+void EnableMaintenance(){
+    
+}
+
+void DisableMaintenance(){
+
+}
+
+void Update(const char* TargetFilePath){
     char DownloadAndOverwriteCommand[1024];
-    char TargetFilePath[1024];
     char OverwriteLatestCommand[1024];
-    sprintf(Result,"%s",Result);
-    sprintf(TargetFilePath,"/www/wwwroot/mirror.lmfty.com/magisk/Magisk-v%s.apk",Result);
+    char VersionAPIPath[1024];
+    sprintf(DownloadAndOverwriteCommand,
+            "wget --no-check-certificate --content-disposition https://github.com/topjohnwu/Magisk/releases/download/v%s/Magisk-v%s.apk -O %s",
+            VerData, VerData, TargetFilePath);
+    sprintf(OverwriteLatestCommand,"cp -rf %s %s/Magisk-latest.apk",TargetFilePath,SitePath);
+    sprintf(VersionAPIPath,"%s/version.html",SitePath);
+    printf("\nCommand:%s", DownloadAndOverwriteCommand);
+    OverwriteFile(VersionAPIPath,VerData);
+    system(DownloadAndOverwriteCommand);
+    system(OverwriteLatestCommand);
+    OrganizeJson();
+}
+
+int main()
+{
+    getVersion();
+    char TargetFilePath[1024];
+    sprintf(TargetFilePath,"%s/Magisk-v%s.apk",SitePath,VerData);
     if(FileExist(TargetFilePath))
         exit(0);
     else {
-        sprintf(DownloadAndOverwriteCommand,
-                "wget --no-check-certificate --content-disposition https://github.com/topjohnwu/Magisk/releases/download/v%s/Magisk-v%s.apk -O /www/wwwroot/mirror.lmfty.com/magisk/Magisk-v%s.apk",
-                Result, Result, Result);
-        sprintf(OverwriteLatestCommand,"cp -rf %s /www/wwwroot/mirror.lmfty.com/magisk/Magisk-latest.apk",TargetFilePath);
-        printf("\nCommand:%s", DownloadAndOverwriteCommand);
-        OverwriteFile("/www/wwwroot/mirror.lmfty.com/magisk/version.html",Result);
-        system(DownloadAndOverwriteCommand);
-        system(OverwriteLatestCommand);
-        OrganizeJson();
+        Update(TargetFilePath);
     }
 }
