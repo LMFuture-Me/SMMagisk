@@ -126,7 +126,7 @@ int OrganizeJson(){
     char StubLink[1024];
     sprintf(MagiskLink,"%s/Magisk-v%s.apk",MirrorURL,cjson_magisk_version->valuestring);
     sprintf(MagiskNote,"%s/notes/%s.md",MirrorURL,cjson_magisk_versionCode->valuestring);
-    sprintf(StubLink,"%s/stub/%s/stub-release.apk",MirrorURL,cjson_magisk_version->valuestring);
+    sprintf(StubLink,"%s/stub/magisk-files@%s/stub-release.apk",MirrorURL,cjson_magisk_version->valuestring);
     cJSON_DetachItemFromObject(cjson_magisk, "link");
     cJSON_DetachItemFromObject(cjson_magisk, "note");
     cJSON_DetachItemFromObject(cjson_stub, "link");
